@@ -7,7 +7,7 @@
 
 using namespace std;
 
-DllExport int Silk2Mp3(string inpath, string outpath, int sr)
+int Silk2Mp3(string inpath, string outpath, int sr)
 {
     FILE *fSilk = fopen(inpath.c_str(), "rb");
     FILE *fMp3  = fopen(outpath.c_str(), "wb");
@@ -38,7 +38,7 @@ DllExport int Silk2Mp3(string inpath, string outpath, int sr)
     return 0;
 }
 
-DllExport int Silk2Mp3(vector<uint8_t> &silk, vector<uint8_t> &mp3, int sr)
+int Silk2Mp3(vector<uint8_t> &silk, vector<uint8_t> &mp3, int sr)
 {
     vector<uint8_t> pcm;
     SilkDecode(silk, pcm, sr);
