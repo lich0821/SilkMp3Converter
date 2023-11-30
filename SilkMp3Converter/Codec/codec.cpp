@@ -45,3 +45,11 @@ int Silk2Mp3(vector<uint8_t> &silk, vector<uint8_t> &mp3, int sr)
     Mp3Encode(pcm, mp3, sr / 2);
     return 0;
 }
+
+int Silk2Mp3(vector<uint8_t> &silk, string mp3path, int sr)
+{
+    vector<uint8_t> pcm;
+    SilkDecode(silk, pcm, sr);
+    Mp3Encode(pcm, mp3path, sr / 2);
+    return 0;
+}

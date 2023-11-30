@@ -4,22 +4,20 @@
 
 #include "codec.h"
 
-#define BATCH_SIZE (2 * sizeof(short int) * PCM_SIZE)
+#define PCM_SIZE   8192
+#define MP3_SIZE   8192
+#define BATCH_SIZE (2 * sizeof(uint16_t) * PCM_SIZE)
 
-DecTime_t Mp3Encode(std::vector<uint8_t> &pcm, std::vector<uint8_t> &mp3, int32_t sr)
+int Mp3Encode(std::vector<uint8_t> &pcm, std::vector<uint8_t> &mp3, int32_t sr)
 {
-    DecTime_t rv = { 0 };
     int write, leftsize;
+    size_t rsize, oldsz;
 
     uint8_t *pPcm = pcm.data();
     uint8_t *pMp3 = mp3.data();
 
-    const int PCM_SIZE = 8192;
-    const int MP3_SIZE = 8192;
-    size_t rsize, oldsz;
-
-    short int pcm_buffer[PCM_SIZE * 2];
-    unsigned char mp3_buffer[MP3_SIZE];
+    static uint8_t mp3_buffer[MP3_SIZE];
+    static int16_t pcm_buffer[PCM_SIZE * 2];
 
     lame_t lame = lame_init();
     lame_set_in_samplerate(lame, sr);
@@ -41,7 +39,7 @@ DecTime_t Mp3Encode(std::vector<uint8_t> &pcm, std::vector<uint8_t> &mp3, int32_
         if (leftsize == 0) {
             write = lame_encode_flush(lame, mp3_buffer, MP3_SIZE);
         } else {
-            write = lame_encode_buffer_interleaved(lame, pcm_buffer, rsize / (2 * sizeof(short int)), mp3_buffer,
+            write = lame_encode_buffer_interleaved(lame, pcm_buffer, rsize / (2 * sizeof(uint16_t)), mp3_buffer,
                                                    MP3_SIZE);
         }
 
@@ -53,5 +51,54 @@ DecTime_t Mp3Encode(std::vector<uint8_t> &pcm, std::vector<uint8_t> &mp3, int32_
 
     lame_close(lame);
 
-    return rv;
+    return 0;
+}
+
+int Mp3Encode(std::vector<uint8_t> &pcm, std::string &mp3path, int32_t sr)
+{
+    int rv = { 0 };
+    size_t rsize;
+    int write, leftsize;
+
+    uint8_t *pPcm = pcm.data();
+    FILE *fMp3    = fopen(mp3path.c_str(), "wb");
+    if (fMp3 == NULL) {
+        printf("Error: could not open input file %s\n", mp3path.c_str());
+        return -1;
+    }
+
+    static uint8_t mp3_buffer[MP3_SIZE];
+    static int16_t pcm_buffer[PCM_SIZE * 2];
+
+    lame_t lame = lame_init();
+    lame_set_in_samplerate(lame, sr);
+    lame_set_VBR(lame, vbr_default);
+    lame_set_VBR_q(lame, 5);
+    lame_set_mode(lame, MONO);
+    lame_init_params(lame);
+
+    do {
+        leftsize = (int32_t)(pcm.size() - (pPcm - pcm.data()));
+        if (leftsize < 0) {
+            leftsize = 0;
+        } else {
+            rsize = leftsize > BATCH_SIZE ? BATCH_SIZE : leftsize;
+            memcpy(pcm_buffer, pPcm, rsize);
+            pPcm += rsize;
+        }
+
+        if (leftsize == 0) {
+            write = lame_encode_flush(lame, mp3_buffer, MP3_SIZE);
+        } else {
+            write = lame_encode_buffer_interleaved(lame, pcm_buffer, rsize / (2 * sizeof(uint16_t)), mp3_buffer,
+                                                   MP3_SIZE);
+        }
+
+        fwrite(mp3_buffer, write, 1, fMp3);
+    } while (leftsize != 0);
+
+    lame_close(lame);
+    fclose(fMp3);
+
+    return 0;
 }

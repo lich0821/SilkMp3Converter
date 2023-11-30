@@ -6,8 +6,8 @@
 static void print_usage(char *argv[])
 {
     printf("\nusage: %s in.amr out.mp3 [settings]\n", argv[0]);
-    printf("\nin.bit       : Bitstream input to decoder");
-    printf("\nout.pcm      : Speech output from decoder");
+    printf("\nin.amr       : Bitstream input to decoder");
+    printf("\nout.mp3      : Speech output from decoder");
     printf("\n[Hz]         : Sampling rate of output signal in Hz; default: 24000");
     printf("\n");
 }
