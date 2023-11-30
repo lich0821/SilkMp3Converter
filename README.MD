@@ -1,6 +1,8 @@
 # SILK and MP3 Converter
 
 ## Usage
+Download `Converter.exe` [here](https://github.com/lich0821/SilkMp3Converter/releases/latest) and run.
+
 ```sh
 usage: Converter.exe in.amr out.mp3 [sample_rate]
 
