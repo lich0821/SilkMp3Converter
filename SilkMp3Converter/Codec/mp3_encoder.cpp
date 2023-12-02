@@ -39,7 +39,7 @@ int Mp3Encode(std::vector<uint8_t> &pcm, std::vector<uint8_t> &mp3, int32_t sr)
         if (leftsize == 0) {
             write = lame_encode_flush(lame, mp3_buffer, MP3_SIZE);
         } else {
-            write = lame_encode_buffer_interleaved(lame, pcm_buffer, rsize / (2 * sizeof(uint16_t)), mp3_buffer,
+            write = lame_encode_buffer_interleaved(lame, pcm_buffer, (int)(rsize / (2 * sizeof(uint16_t))), mp3_buffer,
                                                    MP3_SIZE);
         }
 
@@ -90,7 +90,7 @@ int Mp3Encode(std::vector<uint8_t> &pcm, std::string &mp3path, int32_t sr)
         if (leftsize == 0) {
             write = lame_encode_flush(lame, mp3_buffer, MP3_SIZE);
         } else {
-            write = lame_encode_buffer_interleaved(lame, pcm_buffer, rsize / (2 * sizeof(uint16_t)), mp3_buffer,
+            write = lame_encode_buffer_interleaved(lame, pcm_buffer, (int)(rsize / (2 * sizeof(uint16_t))), mp3_buffer,
                                                    MP3_SIZE);
         }
 
