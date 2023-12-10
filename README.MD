@@ -23,6 +23,7 @@ git clone https://github.com/lich0821/SilkMp3Converter.git
 
 ```sh
 vcpkg install mp3lame:x86-windows-static
+vcpkg install mp3lame:x64-windows-static
 ```
 
 Build and run.
