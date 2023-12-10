@@ -96,6 +96,9 @@
     <VcpkgUseStatic>true</VcpkgUseStatic>
     <VcpkgTriplet>x64-windows-static</VcpkgTriplet>
   </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnabled>true</VcpkgEnabled>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -123,14 +126,16 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Codec\SILK_SDK_SRC_FLP_v1.0.9\interface;$(SolutionDir)Codec\SILK_SDK_SRC_FLP_v1.0.9\src;C:\Tools\vcpkg\installed\x86-windows-static\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalOptions>/VERBOSE %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Projs\SilkMp3Converter\SilkMp3Converter\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Silk.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Tools\vcpkg\installed\x86-windows-static\lib;C:\Projs\SilkMp3Converter\SilkMp3Converter\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libmp3lame-static.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
@@ -141,6 +146,16 @@
     <PostBuildEvent>
       <Message>Copy Header</Message>
     </PostBuildEvent>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
+    </ProjectReference>
+    <Lib>
+      <AdditionalDependencies>libmp3lame-static.lib;libmpghip-static.lib</AdditionalDependencies>
+    </Lib>
+    <Lib>
+      <AdditionalLibraryDirectories>C:\Tools\vcpkg\installed\x86-windows-static\lib</AdditionalLibraryDirectories>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -164,6 +179,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Codec\SILK_SDK_SRC_FLP_v1.0.9\interface;$(SolutionDir)Codec\SILK_SDK_SRC_FLP_v1.0.9\src;C:\Tools\vcpkg\installed\x64-windows-static\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -180,10 +196,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="codec.cpp" />
-    <ClCompile Include="mp3_decoder.cpp" />
     <ClCompile Include="mp3_encoder.cpp" />
     <ClCompile Include="silk_decoder.cpp" />
-    <ClCompile Include="silk_encoder.cpp" />
     <ClCompile Include="SILK_SDK_SRC_FLP_v1.0.9\src\SKP_Silk_A2NLSF.c" />
     <ClCompile Include="SILK_SDK_SRC_FLP_v1.0.9\src\SKP_Silk_allpass_int.c" />
     <ClCompile Include="SILK_SDK_SRC_FLP_v1.0.9\src\SKP_Silk_allpass_int_FLP.c" />
@@ -335,9 +349,6 @@
     <ClInclude Include="SILK_SDK_SRC_FLP_v1.0.9\src\SKP_Silk_tables_NLSF_CB1_10.h" />
     <ClInclude Include="SILK_SDK_SRC_FLP_v1.0.9\src\SKP_Silk_tables_NLSF_CB1_16.h" />
     <ClInclude Include="SILK_SDK_SRC_FLP_v1.0.9\src\SKP_Silk_tuning_parameters.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="codec.def" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

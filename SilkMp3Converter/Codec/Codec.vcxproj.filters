@@ -15,16 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="silk_encoder.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="silk_decoder.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="mp3_encoder.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="mp3_decoder.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="codec.cpp">
@@ -479,10 +473,5 @@
     <ClInclude Include="SILK_SDK_SRC_FLP_v1.0.9\src\SKP_Silk_tuning_parameters.h">
       <Filter>头文件</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="codec.def">
-      <Filter>源文件</Filter>
-    </None>
   </ItemGroup>
 </Project>
