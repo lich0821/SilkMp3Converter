@@ -15,10 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="silk_decoder.cpp">
+    <ClCompile Include="silk_codec.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="mp3_encoder.cpp">
+    <ClCompile Include="mp3_codec.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="codec.cpp">

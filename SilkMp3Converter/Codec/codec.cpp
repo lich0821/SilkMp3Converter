@@ -1,8 +1,5 @@
 #include <stdio.h>
 
-// #include "SKP_Silk_SDK_API.h"
-// #include <lame/lame.h>
-
 #include "codec.h"
 
 using namespace std;

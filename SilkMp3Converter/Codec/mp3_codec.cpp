@@ -8,7 +8,7 @@
 #define MP3_SIZE   8192
 #define BATCH_SIZE (2 * sizeof(uint16_t) * PCM_SIZE)
 
-int Mp3Encode(std::vector<uint8_t> &pcm, std::vector<uint8_t> &mp3, int32_t sr)
+size_t Mp3Encode(std::vector<uint8_t> &pcm, std::vector<uint8_t> &mp3, int32_t sr)
 {
     int write, leftsize;
     size_t rsize, oldsz;
@@ -51,13 +51,13 @@ int Mp3Encode(std::vector<uint8_t> &pcm, std::vector<uint8_t> &mp3, int32_t sr)
 
     lame_close(lame);
 
-    return 0;
+    return mp3.size();
 }
 
-int Mp3Encode(std::vector<uint8_t> &pcm, std::string &mp3path, int32_t sr)
+size_t Mp3Encode(std::vector<uint8_t> &pcm, std::string &mp3path, int32_t sr)
 {
     int rv = { 0 };
-    size_t rsize;
+    size_t rsize, mp3Size = 0;
     int write, leftsize;
 
     uint8_t *pPcm = pcm.data();
@@ -93,12 +93,12 @@ int Mp3Encode(std::vector<uint8_t> &pcm, std::string &mp3path, int32_t sr)
             write = lame_encode_buffer_interleaved(lame, pcm_buffer, (int)(rsize / (2 * sizeof(uint16_t))), mp3_buffer,
                                                    MP3_SIZE);
         }
-
+        mp3Size += write;
         fwrite(mp3_buffer, write, 1, fMp3);
     } while (leftsize != 0);
 
     lame_close(lame);
     fclose(fMp3);
 
-    return 0;
+    return mp3Size;
 }

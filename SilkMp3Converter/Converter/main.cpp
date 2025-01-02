@@ -39,5 +39,7 @@ int main(int argc, char *argv[])
     printf("Output:                      %s\n", speechOutFileName);
     printf("Sample Rate:                 %d\n", sampleRate);
 
-    return Silk2Mp3(bitInFileName, speechOutFileName, sampleRate);
+    Silk2Mp3(bitInFileName, speechOutFileName, sampleRate);
+
+    return 0;
 }

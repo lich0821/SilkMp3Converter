@@ -137,8 +137,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="codec.cpp" />
-    <ClCompile Include="mp3_encoder.cpp" />
-    <ClCompile Include="silk_decoder.cpp" />
+    <ClCompile Include="mp3_codec.cpp" />
+    <ClCompile Include="silk_codec.cpp" />
     <ClCompile Include="SILK_SDK_SRC_FLP_v1.0.9\src\SKP_Silk_A2NLSF.c" />
     <ClCompile Include="SILK_SDK_SRC_FLP_v1.0.9\src\SKP_Silk_allpass_int.c" />
     <ClCompile Include="SILK_SDK_SRC_FLP_v1.0.9\src\SKP_Silk_allpass_int_FLP.c" />

@@ -15,41 +15,11 @@
 #define MAX_API_FS_KHZ      48
 #define MAX_LBRR_DELAY      2
 
-#if (defined(_WIN32) || defined(_WINCE))
-#include <windows.h> /* timer */
-#else                // Linux or Mac
-#include <sys/time.h>
-#endif
-
-#ifdef _WIN32
-
-uint32_t GetHighResolutionTime() /* O: time in usec*/
-{
-    /* Returns a time counter in microsec	*/
-    /* the resolution is platform dependent */
-    /* but is typically 1.62 us resolution  */
-    LARGE_INTEGER lpPerformanceCount;
-    LARGE_INTEGER lpFrequency;
-    QueryPerformanceCounter(&lpPerformanceCount);
-    QueryPerformanceFrequency(&lpFrequency);
-    return (uint32_t)((1000000 * (lpPerformanceCount.QuadPart)) / lpFrequency.QuadPart);
-}
-#else  // Linux or Mac
-uint32_t GetHighResolutionTime() /* O: time in usec*/
-{
-    struct timeval tv;
-    gettimeofday(&tv, 0);
-    return ((tv.tv_sec * 1000000) + (tv.tv_usec));
-}
-#endif // _WIN32
-
 using namespace std;
 
-DecTime_t SilkDecode(vector<uint8_t> &silk, vector<uint8_t> &pcm, int32_t sr)
+size_t SilkDecode(vector<uint8_t> &silk, vector<uint8_t> &pcm, int32_t sr)
 {
-    DecTime_t rv = { 0 };
-    uint32_t tottime, starttime;
-    double filetime;
+    // TODO: Fix stack size
     size_t counter = 0;
     int32_t totPackets, i, k;
     int16_t ret, len, tot_len;
@@ -58,7 +28,6 @@ DecTime_t SilkDecode(vector<uint8_t> &silk, vector<uint8_t> &pcm, int32_t sr)
     uint8_t *payloadEnd = NULL, *payloadToDec = NULL;
     int16_t nBytesPerPacket[MAX_LBRR_DELAY + 1], totBytes;
     int16_t out[((FRAME_LENGTH_MS * MAX_API_FS_KHZ) << 1) * MAX_INPUT_FRAMES], *outPtr;
-    int32_t packetSize_ms = 0;
     int32_t decSizeBytes;
     void *psDec;
     int32_t frames;
@@ -68,14 +37,14 @@ DecTime_t SilkDecode(vector<uint8_t> &silk, vector<uint8_t> &pcm, int32_t sr)
     uint8_t *pPcm  = pcm.data();
     /* Check Silk header */
     {
-        char header_buf[50];
-        // memccpy(header_buf, silk, sizeof(char), strlen("#!SILK_V3"));
-        memcpy(header_buf, pSilk, 9); // 9 = strlen("#!SILK_V3")
-        pSilk += 9;
-        // counter                         = fread(header_buf, sizeof(char), strlen("#!SILK_V3"), bitInFile);
-        header_buf[strlen("#!SILK_V3")] = '\0'; /* Terminate with a null character */
-        if (strcmp(header_buf, "#!SILK_V3") != 0) {
-            /* Non-equal strings */
+        char header_buf[50] = { 0 };
+        memcpy(header_buf, pSilk, 10);
+        header_buf[10] = '\0'; /* Terminate with a null character */
+        if (strcmp(header_buf, "#!SILK_V3") == 0) {
+            pSilk += 9; // 一般 SILK
+        } else if (strcmp(header_buf + 1, "#!SILK_V3") == 0) {
+            pSilk += 10; // 微信 SILK
+        } else {
             printf("Error: Wrong Header %s\n", header_buf);
             exit(0);
         }
@@ -99,7 +68,6 @@ DecTime_t SilkDecode(vector<uint8_t> &silk, vector<uint8_t> &pcm, int32_t sr)
     }
 
     totPackets = 0;
-    tottime    = 0;
     payloadEnd = payload;
 
     /* Simulate the jitter buffer holding MAX_FEC_DELAY packets */
@@ -139,7 +107,6 @@ DecTime_t SilkDecode(vector<uint8_t> &silk, vector<uint8_t> &pcm, int32_t sr)
         /* Silk decoder */
         outPtr    = out;
         tot_len   = 0;
-        starttime = GetHighResolutionTime();
 
         /* No Loss: Decode all frames in the packet */
         frames = 0;
@@ -148,7 +115,7 @@ DecTime_t SilkDecode(vector<uint8_t> &silk, vector<uint8_t> &pcm, int32_t sr)
             ret = SKP_Silk_SDK_Decode(psDec, &DecControl, 0, payloadToDec, nBytes, outPtr, &len);
             if (ret) {
                 printf("\nSKP_Silk_SDK_Decode returned %d\n", ret);
-                return rv;
+                return 0;
             }
 
             frames++;
@@ -163,8 +130,6 @@ DecTime_t SilkDecode(vector<uint8_t> &silk, vector<uint8_t> &pcm, int32_t sr)
             /* Until last 20 ms frame of packet has been decoded */
         } while (DecControl.moreInternalDecoderFrames);
 
-        packetSize_ms = tot_len / (DecControl.API_sampleRate / 1000);
-        tottime += GetHighResolutionTime() - starttime;
         totPackets++;
 
         size_t oldSz = pcm.size();
@@ -182,8 +147,6 @@ DecTime_t SilkDecode(vector<uint8_t> &silk, vector<uint8_t> &pcm, int32_t sr)
         memmove(payload, &payload[nBytesPerPacket[0]], totBytes * sizeof(uint8_t));
         payloadEnd -= nBytesPerPacket[0];
         memmove(nBytesPerPacket, &nBytesPerPacket[1], MAX_LBRR_DELAY * sizeof(int16_t));
-
-        // fprintf(stderr, "\rPackets decoded:             %d\n", totPackets);
     }
 
     /* Empty the recieve buffer */
@@ -194,7 +157,6 @@ DecTime_t SilkDecode(vector<uint8_t> &silk, vector<uint8_t> &pcm, int32_t sr)
         /* Silk decoder */
         outPtr    = out;
         tot_len   = 0;
-        starttime = GetHighResolutionTime();
 
         /* No loss: Decode all frames in the packet */
         frames = 0;
@@ -217,11 +179,8 @@ DecTime_t SilkDecode(vector<uint8_t> &silk, vector<uint8_t> &pcm, int32_t sr)
             /* Until last 20 ms frame of packet has been decoded */
         } while (DecControl.moreInternalDecoderFrames);
 
-        packetSize_ms = tot_len / (DecControl.API_sampleRate / 1000);
-        tottime += GetHighResolutionTime() - starttime;
         totPackets++;
 
-        // fwrite(out, sizeof(int16_t), tot_len, speechOutFile);
         pcm.resize(pcm.size() + sizeof(int16_t) * tot_len);
         memcpy(pPcm, out, sizeof(int16_t) * tot_len);
         pPcm += sizeof(int16_t) * tot_len;
@@ -234,18 +193,10 @@ DecTime_t SilkDecode(vector<uint8_t> &silk, vector<uint8_t> &pcm, int32_t sr)
         memmove(payload, &payload[nBytesPerPacket[0]], totBytes * sizeof(uint8_t));
         payloadEnd -= nBytesPerPacket[0];
         memmove(nBytesPerPacket, &nBytesPerPacket[1], MAX_LBRR_DELAY * sizeof(int16_t));
-
-        fprintf(stderr, "\rPackets decoded:              %d", totPackets);
     }
-
-    printf("\nDecoding Finished \n");
 
     /* Free decoder */
     free(psDec);
 
-    filetime = totPackets * 1e-3 * packetSize_ms;
-    printf("\nFile length:                 %.3f s", filetime);
-    printf("\nTime for decoding:           %.3f s (%.3f%% of realtime)", 1e-6 * tottime, 1e-4 * tottime / filetime);
-    printf("\n\n");
-    return rv;
+    return pcm.size();
 }
